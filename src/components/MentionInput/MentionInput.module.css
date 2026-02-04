@@ -1,0 +1,89 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.input {
+  padding: 8px 12px;
+  border: 1px solid #777777;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input:focus {
+  border-color: #7695EC;
+  box-shadow: 0 0 0 3px rgba(118, 149, 236, 0.1);
+}
+
+.input::placeholder {
+  color: #CCCCCC;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background-color: white;
+  border: 1px solid #DDDDDD;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background-color: white;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #000;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+
+.suggestion:hover,
+.suggestion.selected {
+  background-color: #F5F7FA;
+}
+
+.suggestion.selected {
+  background-color: #E8EEFA;
+}
+
+@media (max-width: 480px) {
+  .input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}

@@ -2,18 +2,27 @@ import { formatDistanceToNow } from 'date-fns';
 import type { Post } from '../../types';
 import { useUser } from '../../contexts/UserContext';
 import { useLikes } from '../../hooks/useLikes';
+import { useComments } from '../../hooks/useComments';
+import { useAttachments } from '../../hooks/useAttachments';
+import { renderTextWithMentions, isMentioned } from '../../utils/mentions';
+import { CommentSection } from '../CommentSection';
+import { ImageGallery } from '../ImageGallery';
 import styles from './PostCard.module.css';
 
 interface PostCardProps {
   post: Post;
   onEdit: (post: Post) => void;
   onDelete: (post: Post) => void;
+  onUsernameClick?: (username: string) => void;
 }
 
-export function PostCard({ post, onEdit, onDelete }: PostCardProps) {
+export function PostCard({ post, onEdit, onDelete, onUsernameClick }: PostCardProps) {
   const { username } = useUser();
   const { toggleLike, getLikes, hasLiked } = useLikes();
+  const { getCommentCount } = useComments();
+  const { getAttachments } = useAttachments();
   const isOwner = username === post.username;
+  const mentioned = isMentioned(post.content, username);
 
   const timeAgo = formatDistanceToNow(new Date(post.created_datetime), {
     addSuffix: true,
@@ -21,13 +30,27 @@ export function PostCard({ post, onEdit, onDelete }: PostCardProps) {
 
   const { count } = getLikes(post.id);
   const liked = hasLiked(post.id, username);
+  const commentCount = getCommentCount(post.id);
+  const images = getAttachments(post.id);
 
   const handleLike = () => {
     toggleLike(post.id, username);
   };
 
+  const handleMentionClick = (mentionedUsername: string) => {
+    if (onUsernameClick) {
+      onUsernameClick(mentionedUsername);
+    }
+  };
+
   return (
-    <article className={styles.card}>
+    <article className={`${styles.card} ${mentioned ? styles.mentioned : ''}`}>
+      {mentioned && (
+        <div className={styles.mentionBadge}>
+          <BellIcon />
+          You were mentioned!
+        </div>
+      )}
       <header className={styles.header}>
         <h3 className={styles.title}>{post.title}</h3>
         {isOwner && (
@@ -51,10 +74,20 @@ export function PostCard({ post, onEdit, onDelete }: PostCardProps) {
       </header>
       <div className={styles.content}>
         <div className={styles.meta}>
-          <span className={styles.username}>@{post.username}</span>
+          <button
+            className={styles.usernameButton}
+            onClick={() => onUsernameClick?.(post.username)}
+            aria-label={`View ${post.username}'s profile`}
+          >
+            @{post.username}
+          </button>
           <span className={styles.time}>{timeAgo}</span>
         </div>
-        <p className={styles.text}>{post.content}</p>
+        <p className={styles.text}>{renderTextWithMentions(post.content, handleMentionClick)}</p>
+        
+        {/* Image gallery */}
+        <ImageGallery images={images} />
+        
         <div className={styles.footer}>
           <button
             className={`${styles.likeButton} ${liked ? styles.liked : ''}`}
@@ -65,6 +98,9 @@ export function PostCard({ post, onEdit, onDelete }: PostCardProps) {
             <span className={styles.likeCount}>{count > 0 ? count : 'Like'}</span>
           </button>
         </div>
+        
+        {/* Comments section */}
+        <CommentSection postId={post.id} postOwnerUsername={post.username} onUsernameClick={onUsernameClick} />
       </div>
     </article>
   );
@@ -124,6 +160,20 @@ function HeartIcon({ filled }: { filled: boolean }) {
       <path
         d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
         stroke={filled ? '#FF5151' : '#777777'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

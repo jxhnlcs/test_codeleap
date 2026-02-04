@@ -28,13 +28,54 @@
   gap: 16px;
 }
 
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.userInfo:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.userInfo:active {
+  transform: translateY(0);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  object-fit: cover;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .username {
   color: white;
   font-size: 14px;
-  font-weight: 500;
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 6px 12px;
-  border-radius: 16px;
+  font-weight: 600;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .logoutButton {
@@ -91,6 +132,7 @@
   }
 }
 
+
 @media (max-width: 768px) {
   .header {
     flex-direction: column;
@@ -101,6 +143,10 @@
   .headerActions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .userInfo {
+    flex: 1;
   }
 
   .main {
@@ -119,6 +165,15 @@
 
   .username {
     font-size: 12px;
+  }
+
+  .badge {
+    font-size: 10px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
   }
 
   .logoutButton {

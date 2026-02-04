@@ -31,3 +31,12 @@ export interface FilterOptions {
   username: string;
   sortBy: SortOption;
 }
+
+// Comments (stored locally since API doesn't support it)
+export interface Comment {
+  id: string;
+  postId: number;
+  username: string;
+  content: string;
+  created_datetime: string;
+}

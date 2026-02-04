@@ -23,3 +23,46 @@ input,
 textarea {
   font-family: inherit;
 }
+
+/* Mention styling */
+.mention {
+  color: #7695EC;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.mention:hover {
+  background-color: #E8EEFA;
+  text-decoration: underline;
+}
+
+.mention:active {
+  transform: scale(0.98);
+}
+
+/* Notification highlight animation */
+.notification-highlight {
+  animation: notificationPulse 2s ease-out;
+  border-radius: 16px;
+}
+
+@keyframes notificationPulse {
+  0% {
+    outline: 3px solid #7695EC;
+    outline-offset: 0px;
+    box-shadow: 0 0 20px rgba(118, 149, 236, 0.5);
+  }
+  50% {
+    outline: 3px solid #7695EC;
+    outline-offset: 4px;
+    box-shadow: 0 0 30px rgba(118, 149, 236, 0.3);
+  }
+  100% {
+    outline: 3px solid transparent;
+    outline-offset: 8px;
+    box-shadow: 0 0 0 rgba(118, 149, 236, 0);
+  }
+}
