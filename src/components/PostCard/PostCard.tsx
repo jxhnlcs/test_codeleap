@@ -2,7 +2,6 @@ import { formatDistanceToNow } from 'date-fns';
 import type { Post } from '../../types';
 import { useUser } from '../../contexts/UserContext';
 import { useLikes } from '../../hooks/useLikes';
-import { useComments } from '../../hooks/useComments';
 import { useAttachments } from '../../hooks/useAttachments';
 import { renderTextWithMentions, isMentioned } from '../../utils/mentions';
 import { CommentSection } from '../CommentSection';
@@ -19,7 +18,6 @@ interface PostCardProps {
 export function PostCard({ post, onEdit, onDelete, onUsernameClick }: PostCardProps) {
   const { username } = useUser();
   const { toggleLike, getLikes, hasLiked } = useLikes();
-  const { getCommentCount } = useComments();
   const { getAttachments } = useAttachments();
   const isOwner = username === post.username;
   const mentioned = isMentioned(post.content, username);
@@ -30,7 +28,6 @@ export function PostCard({ post, onEdit, onDelete, onUsernameClick }: PostCardPr
 
   const { count } = getLikes(post.id);
   const liked = hasLiked(post.id, username);
-  const commentCount = getCommentCount(post.id);
   const images = getAttachments(post.id);
 
   const handleLike = () => {
