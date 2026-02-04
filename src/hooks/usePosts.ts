@@ -8,7 +8,8 @@ export function usePosts(limit = 10, offset = 0) {
   return useQuery({
     queryKey: [...POSTS_QUERY_KEY, limit, offset],
     queryFn: () => api.getPosts(limit, offset),
-    staleTime: 30000, // 30 seconds
+    staleTime: 10000, // 10 seconds
+    refetchInterval: 15000, // Auto-refetch every 15 seconds to catch new mentions
   });
 }
 

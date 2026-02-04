@@ -29,15 +29,16 @@ export function MainScreen() {
     notifications,
     unreadCount,
     markAllAsRead,
+    clearReadNotifications,
     checkForMentions,
   } = useNotifications(username);
 
-  // Check for mentions when posts load
+  // Check for mentions when posts load or change
   useEffect(() => {
-    if (allPosts.length > 0 && username) {
-      checkForMentions(allPosts);
+    if (data?.results && data.results.length > 0 && username) {
+      checkForMentions(data.results);
     }
-  }, [allPosts, username, checkForMentions]);
+  }, [data?.results, username, checkForMentions]);
 
   const {
     searchTerm,
@@ -110,6 +111,7 @@ export function MainScreen() {
             notifications={notifications}
             unreadCount={unreadCount}
             onMarkAllAsRead={markAllAsRead}
+            onClearRead={clearReadNotifications}
             onNotificationClick={(notification) => {
               // Find and scroll to the post
               const postElement = document.getElementById(`post-${notification.postId}`);

@@ -15,14 +15,42 @@ export interface Notification {
 
 interface NotificationsState {
   notifications: Notification[];
-  lastCheckedPostIds: number[];
+  checkedPosts: Record<number, string>; // postId -> content hash (to detect changes)
+}
+
+function hashContent(content: string): string {
+  // Simple hash to detect content changes
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString();
+}
+
+function getInitialState(): NotificationsState {
+  try {
+    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Validate and migrate from old format if needed
+      return {
+        notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [],
+        checkedPosts: parsed.checkedPosts && typeof parsed.checkedPosts === 'object' 
+          ? parsed.checkedPosts 
+          : {},
+      };
+    }
+  } catch (error) {
+    console.warn('Failed to parse notifications from localStorage, resetting...');
+    localStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);
+  }
+  return { notifications: [], checkedPosts: {} };
 }
 
 export function useNotifications(currentUsername: string) {
-  const [state, setState] = useState<NotificationsState>(() => {
-    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : { notifications: [], lastCheckedPostIds: [] };
-  });
+  const [state, setState] = useState<NotificationsState>(getInitialState);
 
   // Save to localStorage whenever state changes
   useEffect(() => {
@@ -39,7 +67,7 @@ export function useNotifications(currentUsername: string) {
 
     setState((prev) => ({
       ...prev,
-      notifications: [newNotification, ...prev.notifications].slice(0, 50), // Keep max 50
+      notifications: [newNotification, ...prev.notifications].slice(0, 50),
     }));
   }, []);
 
@@ -50,17 +78,16 @@ export function useNotifications(currentUsername: string) {
     }));
   }, []);
 
-  const markAsRead = useCallback((notificationId: string) => {
+  // Clear read notifications (called when closing dropdown)
+  const clearReadNotifications = useCallback(() => {
     setState((prev) => ({
       ...prev,
-      notifications: prev.notifications.map((n) =>
-        n.id === notificationId ? { ...n, read: true } : n
-      ),
+      notifications: prev.notifications.filter((n) => !n.read),
     }));
   }, []);
 
   const clearAll = useCallback(() => {
-    setState({ notifications: [], lastCheckedPostIds: [] });
+    setState({ notifications: [], checkedPosts: {} });
   }, []);
 
   const unreadCount = state.notifications.filter((n) => !n.read).length;
@@ -70,35 +97,59 @@ export function useNotifications(currentUsername: string) {
     (posts: Array<{ id: number; username: string; title: string; content: string }>) => {
       if (!currentUsername) return;
 
-      const mentionRegex = new RegExp(`@${currentUsername}\\b`, 'gi');
+      setState((prev) => {
+        const newNotifications: Notification[] = [];
+        const newCheckedPosts: Record<number, string> = { ...prev.checkedPosts };
+        
+        // Get existing notification post IDs to avoid duplicates
+        const existingPostIds = new Set(prev.notifications.map((n) => n.postId));
 
-      posts.forEach((post) => {
-        // Skip own posts
-        if (post.username === currentUsername) return;
+        posts.forEach((post) => {
+          // Skip own posts
+          if (post.username.toLowerCase() === currentUsername.toLowerCase()) return;
 
-        // Skip already checked posts
-        if (state.lastCheckedPostIds.includes(post.id)) return;
+          // Create content hash to detect changes
+          const contentHash = hashContent(post.title + post.content);
+          
+          // Skip if already checked with same content
+          if (prev.checkedPosts[post.id] === contentHash) return;
 
-        // Check for mentions in content
-        if (mentionRegex.test(post.content) || mentionRegex.test(post.title)) {
-          addNotification({
-            type: 'mention_post',
-            postId: post.id,
-            postTitle: post.title,
-            fromUsername: post.username,
-            content: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-          });
+          // Check for mentions
+          const mentionRegex = new RegExp(`@${currentUsername}\\b`, 'i');
+          const hasMention = mentionRegex.test(post.content) || mentionRegex.test(post.title);
+
+          if (hasMention && !existingPostIds.has(post.id)) {
+            newNotifications.push({
+              id: `${Date.now()}-${post.id}-${Math.random().toString(36).substring(7)}`,
+              type: 'mention_post',
+              postId: post.id,
+              postTitle: post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title,
+              fromUsername: post.username,
+              content: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
+              createdAt: new Date().toISOString(),
+              read: false,
+            });
+            existingPostIds.add(post.id); // Prevent duplicates within same batch
+          }
+
+          // Mark as checked
+          newCheckedPosts[post.id] = contentHash;
+        });
+
+        // Only update if there are changes
+        if (newNotifications.length === 0 && 
+            Object.keys(newCheckedPosts).length === Object.keys(prev.checkedPosts).length) {
+          return prev; // No changes, return same reference
         }
-      });
 
-      // Update checked post IDs
-      const newPostIds = posts.map((p) => p.id);
-      setState((prev) => ({
-        ...prev,
-        lastCheckedPostIds: [...new Set([...prev.lastCheckedPostIds, ...newPostIds])].slice(-200),
-      }));
+        return {
+          ...prev,
+          notifications: [...newNotifications, ...prev.notifications].slice(0, 50),
+          checkedPosts: newCheckedPosts,
+        };
+      });
     },
-    [currentUsername, state.lastCheckedPostIds, addNotification]
+    [currentUsername]
   );
 
   return {
@@ -106,7 +157,7 @@ export function useNotifications(currentUsername: string) {
     unreadCount,
     addNotification,
     markAllAsRead,
-    markAsRead,
+    clearReadNotifications,
     clearAll,
     checkForMentions,
   };

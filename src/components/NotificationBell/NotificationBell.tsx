@@ -7,6 +7,7 @@ interface NotificationBellProps {
   notifications: Notification[];
   unreadCount: number;
   onMarkAllAsRead: () => void;
+  onClearRead: () => void;
   onNotificationClick?: (notification: Notification) => void;
 }
 
@@ -14,16 +15,26 @@ export function NotificationBell({
   notifications,
   unreadCount,
   onMarkAllAsRead,
+  onClearRead,
   onNotificationClick,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Close dropdown and clear read notifications
+  const closeDropdown = () => {
+    setIsOpen(false);
+    // Clear read notifications after closing
+    setTimeout(() => {
+      onClearRead();
+    }, 300); // Small delay for animation
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        closeDropdown();
       }
     };
 
@@ -32,12 +43,14 @@ export function NotificationBell({
   }, []);
 
   const handleToggle = () => {
-    const newIsOpen = !isOpen;
-    setIsOpen(newIsOpen);
-    
-    // Mark all as read when opening
-    if (newIsOpen && unreadCount > 0) {
-      onMarkAllAsRead();
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      setIsOpen(true);
+      // Mark all as read when opening
+      if (unreadCount > 0) {
+        onMarkAllAsRead();
+      }
     }
   };
 
@@ -45,7 +58,7 @@ export function NotificationBell({
     if (onNotificationClick) {
       onNotificationClick(notification);
     }
-    setIsOpen(false);
+    closeDropdown();
   };
 
   return (
