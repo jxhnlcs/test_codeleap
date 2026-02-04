@@ -2,6 +2,8 @@
   "name": "codeleap-network",
   "private": true,
   "version": "1.0.0",
+  "description": "A social network application built with React for CodeLeap technical challenge",
+  "author": "John Lucas",
   "type": "module",
   "scripts": {
     "dev": "vite",

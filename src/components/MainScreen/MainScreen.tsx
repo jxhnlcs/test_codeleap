@@ -7,10 +7,13 @@ import { PostFilters } from '../PostFilters';
 import { Pagination } from '../Pagination';
 import { UserProfileModal } from '../UserProfileModal';
 import { NotificationBell } from '../NotificationBell';
+import { StorageWarning } from '../StorageWarning';
+import { LogoutModal } from '../LogoutModal';
 import { usePosts } from '../../hooks/usePosts';
 import { usePostFilters } from '../../hooks/usePostFilters';
 import { usePagination } from '../../hooks/usePagination';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useStorageMonitor } from '../../hooks/useStorageMonitor';
 import { useUser } from '../../contexts/UserContext';
 import type { Post } from '../../types';
 import styles from './MainScreen.module.css';
@@ -20,9 +23,20 @@ export function MainScreen() {
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
   const [postToEdit, setPostToEdit] = useState<Post | null>(null);
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+  const [storageWarningDismissed, setStorageWarningDismissed] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { username, photoURL, isFirebaseUser, logout } = useUser();
 
   const allPosts = data?.results || [];
+
+  // Storage monitoring
+  const {
+    storageInfo,
+    showWarning: showStorageWarning,
+    clearAllStorage,
+    clearAttachmentsOnly,
+    dismissWarning,
+  } = useStorageMonitor();
 
   // Notifications
   const {
@@ -82,9 +96,7 @@ export function MainScreen() {
   };
 
   const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      logout();
-    }
+    setShowLogoutModal(true);
   };
 
   const handleUsernameClick = (clickedUsername: string) => {
@@ -208,6 +220,36 @@ export function MainScreen() {
           onDeletePost={handleDelete}
         />
       )}
+
+      {showStorageWarning && !storageWarningDismissed && (
+        <StorageWarning
+          usedFormatted={storageInfo.usedFormatted}
+          percentage={storageInfo.percentage}
+          onClearAll={() => {
+            clearAllStorage();
+            setStorageWarningDismissed(true);
+          }}
+          onClearAttachments={() => {
+            clearAttachmentsOnly();
+            setStorageWarningDismissed(true);
+          }}
+          onDismiss={() => {
+            dismissWarning();
+            setStorageWarningDismissed(true);
+          }}
+        />
+      )}
+
+      <LogoutModal
+        isOpen={showLogoutModal}
+        username={username}
+        photoURL={photoURL}
+        onConfirm={() => {
+          setShowLogoutModal(false);
+          logout();
+        }}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </div>
   );
 }
