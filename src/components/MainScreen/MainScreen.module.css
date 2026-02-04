@@ -1,0 +1,38 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: white;
+}
+
+.header {
+  background-color: #7695EC;
+  padding: 27px 37px;
+}
+
+.headerTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.main {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.posts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.message {
+  text-align: center;
+  color: #777777;
+  font-size: 16px;
+  padding: 40px 0;
+}
