@@ -16,13 +16,20 @@
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .input:focus {
   border-color: #7695EC;
+  box-shadow: 0 0 0 3px rgba(118, 149, 236, 0.1);
 }
 
 .input::placeholder {
   color: #CCCCCC;
+}
+
+@media (max-width: 480px) {
+  .input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
 }

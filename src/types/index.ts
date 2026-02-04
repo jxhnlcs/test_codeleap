@@ -23,3 +23,11 @@ export interface PostsResponse {
   previous: string | null;
   results: Post[];
 }
+
+export type SortOption = 'newest' | 'oldest' | 'title-asc' | 'title-desc';
+
+export interface FilterOptions {
+  search: string;
+  username: string;
+  sortBy: SortOption;
+}

@@ -3,6 +3,24 @@
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid #999999;
+  animation: fadeIn 0.3s ease-in;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .header {
@@ -38,11 +56,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .iconButton:hover {
   opacity: 0.7;
+  transform: scale(1.1);
+}
+
+.iconButton:active {
+  transform: scale(0.95);
 }
 
 .content {
@@ -73,4 +96,98 @@
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #EEEEEE;
+}
+
+.likeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.likeButton:hover {
+  background-color: #FFF5F5;
+}
+
+.likeButton:active {
+  transform: scale(0.95);
+}
+
+.likeButton.liked {
+  background-color: #FFE5E5;
+}
+
+.likeButton.liked:hover {
+  background-color: #FFD5D5;
+}
+
+.likeCount {
+  font-size: 14px;
+  font-weight: 500;
+  color: #777777;
+}
+
+.likeButton.liked .likeCount {
+  color: #FF5151;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .username,
+  .time,
+  .text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .username,
+  .time,
+  .text {
+    font-size: 14px;
+  }
+
+  .actions {
+    gap: 4px;
+  }
 }

@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import type { Post } from '../../types';
 import { useUser } from '../../contexts/UserContext';
+import { useLikes } from '../../hooks/useLikes';
 import styles from './PostCard.module.css';
 
 interface PostCardProps {
@@ -11,11 +12,19 @@ interface PostCardProps {
 
 export function PostCard({ post, onEdit, onDelete }: PostCardProps) {
   const { username } = useUser();
+  const { toggleLike, getLikes, hasLiked } = useLikes();
   const isOwner = username === post.username;
 
   const timeAgo = formatDistanceToNow(new Date(post.created_datetime), {
     addSuffix: true,
   });
+
+  const { count } = getLikes(post.id);
+  const liked = hasLiked(post.id, username);
+
+  const handleLike = () => {
+    toggleLike(post.id, username);
+  };
 
   return (
     <article className={styles.card}>
@@ -46,6 +55,16 @@ export function PostCard({ post, onEdit, onDelete }: PostCardProps) {
           <span className={styles.time}>{timeAgo}</span>
         </div>
         <p className={styles.text}>{post.content}</p>
+        <div className={styles.footer}>
+          <button
+            className={`${styles.likeButton} ${liked ? styles.liked : ''}`}
+            onClick={handleLike}
+            aria-label={liked ? 'Unlike post' : 'Like post'}
+          >
+            <HeartIcon filled={liked} />
+            <span className={styles.likeCount}>{count > 0 ? count : 'Like'}</span>
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -85,6 +104,26 @@ function EditIcon() {
       <path
         d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z"
         stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill={filled ? '#FF5151' : 'none'}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        stroke={filled ? '#FF5151' : '#777777'}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
